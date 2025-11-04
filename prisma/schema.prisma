@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id String @id @default(uuid())
+  name String @unique
+  email String @unique
+  password String
+  role Role @relation(fields: [roleId], references: [id])
+  roleId String
+  state String @default("active")
+  norm Int
+  level String
+  projects Project[] @relation("UserProjects")
+  workDays WorkDay[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id String @id @default(uuid())
+  users User[] @relation("UserProjects")
+  // name String
+  // configuration configuration
+  // tasks Task[]
+  // files File[]
+  // state String
+  // description String
+  // priority String
+  // autoFileAssignation Boolean
+  // multipleFileAssignation Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model File {
+//   id String @id @default(uuid())
+//   name String
+//   project @relation(fields: [projectId], references: [id])
+//   projectId String
+//   fileInfos FileInfo[]
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model FileInfos {
+//   id String @id @default(uuid())
+//   file File @relation(fields: [fileId], references: [id])
+//   fileId String
+//   complexity String
+//   location String
+//   state String
+//   startDate DateTime
+//   endDate DateTime
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model Configuration {
+//   id String @id @default(uuid())
+// }
+
+// model Task {
+//  id String @id @default(uuid())
+// }
+
+model WorkDay {
+  id String @id @default(uuid())
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id String @id @default(uuid())
+  users User[]
+  name String @unique
+  code String @unique
+  // permissions Permission[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model Permission {
+
+// }
