@@ -1,15 +1,25 @@
 import {Request, Response} from 'express'
 import prisma from "../db/getDb.js"
 import bcrypt from 'bcrypt'
+import ApiResponse from '../types/express.types.js'
+import User from '../types/user.types.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const users = await prisma.user.findMany()
-        res.status(200).json({
+        const users = await prisma.user.findMany({
+            include:{
+                projects: true,
+                workDays: true
+            }
+        })
+
+        const response: ApiResponse<User[]> ={
             success: true,
             data: users,
             message: 'Users retrieved successfully'
-        })
+        }
+        res.status(200).json(response)
+
     } catch (err) {
         console.error(err)
     }
@@ -23,11 +33,11 @@ export const createUser = async (req: Request, res: Response) => {
             email: email
         }})
         if (existingUser){
-            res.status(409).json({
+            const response: ApiResponse<any> = {
                 success: false,
-                data: null,
                 message: `User with email ${email} already exists`
-            })
+            }
+            res.status(409).json(response)
             return
         }
 
@@ -38,11 +48,12 @@ export const createUser = async (req: Request, res: Response) => {
         }})
 
         if (!userRole){
-            res.status(404).json({
+            const response: ApiResponse<any> = {
                 success: false,
                 data: null,
                 message: `Invalid role`
-            })
+            }
+            res.status(404).json(response)
         }
 
         const newUser = await prisma.user.create({
@@ -57,22 +68,27 @@ export const createUser = async (req: Request, res: Response) => {
             },
             omit: {
                 password: true
+            },
+            include:{
+                projects: true,
+                workDays: true
             }
         })
 
-        res.status(201).json({
+        const response: ApiResponse<User> = {
             success: true,
             data: newUser,
             message: "User created successfully"
-        })
+        }
+        res.status(201).json(response)
 
     } catch(err){
         console.error(err)
-        res.status(500).json({
+        const response: ApiResponse<any> = {
             success: false,
-            data: null,
             message: 'Internal server error'
-        })
+        }
+        res.status(500).json(response)
     }
 }
 
@@ -88,11 +104,11 @@ export const updateUser = async (req: Request, res: Response) => {
             })
 
             if (!existingUser){
-                res.status(404).json({
+                const response: ApiResponse<any> = {
                     success: false,
-                    data: null,
                     message: `User not found`
-                })
+                }
+                res.status(404).json(response)
                 return
             }
 
@@ -103,69 +119,106 @@ export const updateUser = async (req: Request, res: Response) => {
                 data: updates,
                 omit: {
                     password: true
+                },
+                include:{
+                    workDays: true,
+                    projects: true
                 }
             })
 
-            res.status(200).json({
+            const response: ApiResponse<User> = {
                 success: true,
                 data: updatedUser,
                 message: 'User updated successfully'
-            })
+            }
+            res.status(200).json(response)
 
     } catch (error){
         console.error(error)
-        res.status(500).json({
+        const response: ApiResponse<any> = {
             success: false,
-            data: null,
             message: 'Internal server error'
-        })
+        }
+        res.status(500).json(response)
     }
 }
 
 export const getUserById = async (req: Request, res: Response) => {
-    const id = req.params.id as string
+    try {
+        const id = req.params.id as string
 
-    const user = await prisma.user.findUnique({
-        where: {
-            id
-        }
-    })
-
-    if(!user){
-        res.status(404).json({
-            success:false,
-            data:null,
-            message: "User not found"
+        const user = await prisma.user.findUnique({
+            where: {
+                id
+            },
+            include: {
+                projects: true,
+                workDays: true
+            }
         })
-    }
 
-    res.status(200).json({
-        success:true,
-        data: null,
-        message: "User retrieved successfully"
-    })
+        if(!user){
+            const response: ApiResponse<any> = {
+                success: false,
+                message: `User not found`
+            }
+            res.status(404).json(response)
+            return
+        }
+
+        const response: ApiResponse<User> = {
+            success:true,
+            data: user,
+            message: "User retrieved successfully"
+        }
+        res.status(200).json(response)
+    }
+     catch (error){
+        console.error(error)
+        const response: ApiResponse<any> = {
+            success: false,
+            message: 'Internal server error'
+        }
+        res.status(500).json(response)
+    }
 }
 
 export const deleteUser = async (req: Request, res: Response) => {
-    const id = req.params.id as string
+    try{
+        const id = req.params.id as string
 
-    const user = await prisma.user.delete({
-        where: {
-            id
-        }
-    })
-
-    if(!user){
-        res.status(404).json({
-            success:false,
-            data:null,
-            message: "User not found"
+        const user = await prisma.user.delete({
+            where: {
+                id
+            },
+            include: {
+                projects: true,
+                workDays: true
+            }
         })
-    }
 
-    res.status(200).json({
-        success:true,
-        data: null,
-        message: "User deleted successfully"
-    })
+        if(!user){
+            const response: ApiResponse<any> = {
+                success: false,
+                message: `User not found`
+            }
+            res.status(404).json(response)
+            return
+        }
+
+        const response: ApiResponse<User> = {
+            success:true,
+            data: user,
+            message: "User deleted successfully"
+        }
+        res.status(200).json(response)
+    }
+    catch (error){
+        console.error(error)
+        const response: ApiResponse<any> = {
+            success: false,
+            message: 'Internal server error'
+        }
+        res.status(500).json(response)
+    }
 }
