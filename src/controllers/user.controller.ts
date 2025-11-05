@@ -1,17 +1,13 @@
-import {Request, Response} from 'express'
-import prisma from "../db/getDb.js"
+import e, {Request, Response} from 'express'
 import bcrypt from 'bcrypt'
 import ApiResponse from '../types/express.types.js'
 import User from '../types/user.types.js'
+import { createUserInDb, deleteUserFromDb, getAllUsersFromDb, getUserByEmailFromDb, getUserByIdFromDb, updateUserInDb } from '../models/user.model.js'
+import { getRoleByRoleNameFromDb } from '../models/role.models.js'
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const users = await prisma.user.findMany({
-            include:{
-                projects: true,
-                workDays: true
-            }
-        })
+        const users = await getAllUsersFromDb()
 
         const response: ApiResponse<User[]> ={
             success: true,
@@ -29,9 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
     try {
         const {name, email, state, level, password, norm, role} = req.body
 
-        const existingUser = await prisma.user.findUnique({where:{
-            email: email
-        }})
+        const existingUser = await getUserByEmailFromDb(email)
         if (existingUser){
             const response: ApiResponse<any> = {
                 success: false,
@@ -43,37 +37,26 @@ export const createUser = async (req: Request, res: Response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const userRole = await prisma.role.findUnique({where:{
-            name: role
-        }})
+        const userRole = await getRoleByRoleNameFromDb(role)
 
         if (!userRole){
             const response: ApiResponse<any> = {
                 success: false,
-                data: null,
                 message: `Invalid role`
             }
             res.status(404).json(response)
+            return
         }
 
-        const newUser = await prisma.user.create({
-            data: {
-                name,
-                email,
-                state,
-                level,
-                norm,
-                password: hashedPassword,
-                roleId: userRole!.id
-            },
-            omit: {
-                password: true
-            },
-            include:{
-                projects: true,
-                workDays: true
+        const newUser = await createUserInDb(name, email, state, level, norm, hashedPassword, userRole.id)
+
+        if(!newUser) {
+            const response: ApiResponse<any> = {
+                success: false,
+                message: 'User creation failed'
             }
-        })
+            return res.status(500).json(response)
+        }
 
         const response: ApiResponse<User> = {
             success: true,
@@ -97,11 +80,7 @@ export const updateUser = async (req: Request, res: Response) => {
         const id = req.params.id as string
             const updates = req.body
 
-            const existingUser = await prisma.user.findUnique({
-                where: {
-                    id
-                }
-            })
+            const existingUser = await getUserByIdFromDb(id)
 
             if (!existingUser){
                 const response: ApiResponse<any> = {
@@ -112,19 +91,16 @@ export const updateUser = async (req: Request, res: Response) => {
                 return
             }
 
-            const updatedUser = await prisma.user.update({
-                where: {
-                    id
-                },
-                data: updates,
-                omit: {
-                    password: true
-                },
-                include:{
-                    workDays: true,
-                    projects: true
+            const updatedUser = await updateUserInDb(id, updates)
+
+            if(!updatedUser){
+                const response: ApiResponse<any> = {
+                    success: false,
+                    message: `Internal server error`
                 }
-            })
+                res.status(500).json(response)
+                return
+            }
 
             const response: ApiResponse<User> = {
                 success: true,
@@ -147,15 +123,7 @@ export const getUserById = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string
 
-        const user = await prisma.user.findUnique({
-            where: {
-                id
-            },
-            include: {
-                projects: true,
-                workDays: true
-            }
-        })
+        const user = await getUserByIdFromDb(id)
 
         if(!user){
             const response: ApiResponse<any> = {
@@ -187,15 +155,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     try{
         const id = req.params.id as string
 
-        const user = await prisma.user.delete({
-            where: {
-                id
-            },
-            include: {
-                projects: true,
-                workDays: true
-            }
-        })
+        const user = await deleteUserFromDb(id)
 
         if(!user){
             const response: ApiResponse<any> = {

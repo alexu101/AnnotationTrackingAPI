@@ -13,4 +13,5 @@ export default interface User {
     workDays: WorkDay[]
     createdAt: Date
     updatedAt: Date
+    password?: string
 }
