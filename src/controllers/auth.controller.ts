@@ -1,35 +1,28 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import ApiResponse from "../types/express.types.js"
 import bcrypt from 'bcrypt'
 import {AuthInfo, TokenPayload} from "../types/auth.types.js"
 import { generateToken, verifyPassword } from "../utils/utils.auth.js"
 import { createUserInDb, getUserByEmailFromDb } from "../models/user.model.js"
 import { getRoleByRoleNameFromDb } from "../models/role.models.js"
+import { ResourceConflictError } from "../errors/ResourceConflictError.js"
+import { NotFoundError } from "../errors/NotFoundError.js"
+import { BadRequestError } from "../errors/BadRequestError.js"
 
-export const signUp = async (req: Request, res: Response) => {
+export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {name, email, password, role, state, level, norm} = req.body
 
         const existingUser = await getUserByEmailFromDb(email)
 
         if(existingUser){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: `User with email ${email} already exists`
-            }
-            res.status(404).json(response)
-            return
+            throw new ResourceConflictError(`User with email ${email} already exists`)
         }
 
         const userRole = await getRoleByRoleNameFromDb(role)
 
         if(!userRole){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: 'Invalid role'
-            }
-            res.status(404).json(response)
-            return
+            throw new NotFoundError('Invalid role')
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -37,11 +30,7 @@ export const signUp = async (req: Request, res: Response) => {
         const newUser = await createUserInDb(name, email, state, level, norm, hashedPassword, userRole.id)
 
         if(!newUser) {
-            const response: ApiResponse<any> = {
-                success: false,
-                message: 'User creation failed'
-            }
-            return res.status(500).json(response)
+            throw new Error('Internal server error: User creation failed')
         }
 
         const tokenPayload: TokenPayload = {
@@ -61,38 +50,25 @@ export const signUp = async (req: Request, res: Response) => {
         }
         res.status(201).json(response)
 
-    } catch(error) {
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
-        res.status(500).json(response)
+    } catch(err) {
+        next(err)
     }
 }
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {email, password} = req.body
 
         const user =  await getUserByEmailFromDb(email, false)
 
         if (!user) {
-            const response: ApiResponse<any> = {
-                success: false,
-                message: 'User not found'
-            }
-            res.status(404).json(response)
-            return
+            throw new NotFoundError('User with provided credentials not found')
         }
 
-        const isPasswordValid = verifyPassword(password, user.password as string)
+        const isPasswordValid = await verifyPassword(password, user.password as string)
 
         if (!isPasswordValid) {
-            const response: ApiResponse<any> = {
-                success: false,
-                message: 'Wrong password'
-            }
-            return
+            return new BadRequestError('Invalid password')
         }
 
         const tokenPayload: TokenPayload = {
@@ -111,10 +87,7 @@ export const login = async (req: Request, res: Response) => {
             message: 'User logged in successfully'
         }
         res.status(200).json(response)
-    } catch (error) {
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
+    } catch (err) {
+        next(err)
     }
 }

@@ -5,7 +5,7 @@ import { createUser, getAllUsers, updateUser, getUserById } from '../controllers
 const userRouter: Router = Router()
 
 userRouter.get('/', getAllUsers)
-userRouter.get('/id',validate(getUserSchema), getUserById)
+userRouter.get('/:id',validate(getUserSchema), getUserById)
 userRouter.post('/', validate(createUserSchema), createUser)
 userRouter.put('/:id', validate(updateUserSchema), updateUser)
 userRouter.delete('/:id', validate(deleteUserSchema), updateUser)

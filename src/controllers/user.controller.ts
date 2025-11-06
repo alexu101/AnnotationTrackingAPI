@@ -1,11 +1,12 @@
-import e, {Request, Response} from 'express'
+import e, {NextFunction, Request, Response} from 'express'
 import bcrypt from 'bcrypt'
 import ApiResponse from '../types/express.types.js'
 import User from '../types/user.types.js'
 import { createUserInDb, deleteUserFromDb, getAllUsersFromDb, getUserByEmailFromDb, getUserByIdFromDb, updateUserInDb } from '../models/user.model.js'
 import { getRoleByRoleNameFromDb } from '../models/role.models.js'
+import { NotFoundError } from '../errors/NotFoundError.js'
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const users = await getAllUsersFromDb()
 
@@ -17,11 +18,11 @@ export const getAllUsers = async (req: Request, res: Response) => {
         res.status(200).json(response)
 
     } catch (err) {
-        console.error(err)
+        next(err)
     }
 }
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {name, email, state, level, password, norm, role} = req.body
 
@@ -40,22 +41,13 @@ export const createUser = async (req: Request, res: Response) => {
         const userRole = await getRoleByRoleNameFromDb(role)
 
         if (!userRole){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: `Invalid role`
-            }
-            res.status(404).json(response)
-            return
+            throw new NotFoundError('Invalid role')
         }
 
         const newUser = await createUserInDb(name, email, state, level, norm, hashedPassword, userRole.id)
 
         if(!newUser) {
-            const response: ApiResponse<any> = {
-                success: false,
-                message: 'User creation failed'
-            }
-            return res.status(500).json(response)
+            throw new Error('Internal Server error: User creation failed')
         }
 
         const response: ApiResponse<User> = {
@@ -66,16 +58,11 @@ export const createUser = async (req: Request, res: Response) => {
         res.status(201).json(response)
 
     } catch(err){
-        console.error(err)
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
-        res.status(500).json(response)
+        next(err)
     }
 }
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = req.params.id as string
             const updates = req.body
@@ -83,23 +70,13 @@ export const updateUser = async (req: Request, res: Response) => {
             const existingUser = await getUserByIdFromDb(id)
 
             if (!existingUser){
-                const response: ApiResponse<any> = {
-                    success: false,
-                    message: `User not found`
-                }
-                res.status(404).json(response)
-                return
+                throw new NotFoundError('User not found')
             }
 
             const updatedUser = await updateUserInDb(id, updates)
 
             if(!updatedUser){
-                const response: ApiResponse<any> = {
-                    success: false,
-                    message: `Internal server error`
-                }
-                res.status(500).json(response)
-                return
+                throw new Error('Internal Server error: User update failed')
             }
 
             const response: ApiResponse<User> = {
@@ -109,29 +86,19 @@ export const updateUser = async (req: Request, res: Response) => {
             }
             res.status(200).json(response)
 
-    } catch (error){
-        console.error(error)
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
-        res.status(500).json(response)
+    } catch (err){
+        next(err)
     }
 }
 
-export const getUserById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = req.params.id as string
 
         const user = await getUserByIdFromDb(id)
 
         if(!user){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: `User not found`
-            }
-            res.status(404).json(response)
-            return
+            throw new NotFoundError("User not found")
         }
 
         const response: ApiResponse<User> = {
@@ -141,29 +108,19 @@ export const getUserById = async (req: Request, res: Response) => {
         }
         res.status(200).json(response)
     }
-     catch (error){
-        console.error(error)
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
-        res.status(500).json(response)
+     catch (err){
+        next(err)
     }
 }
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = req.params.id as string
 
         const user = await deleteUserFromDb(id)
 
         if(!user){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: `User not found`
-            }
-            res.status(404).json(response)
-            return
+            throw new NotFoundError('User not found')
         }
 
         const response: ApiResponse<User> = {
@@ -173,12 +130,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         }
         res.status(200).json(response)
     }
-    catch (error){
-        console.error(error)
-        const response: ApiResponse<any> = {
-            success: false,
-            message: 'Internal server error'
-        }
-        res.status(500).json(response)
+    catch (err) {
+        next(err)
     }
 }
