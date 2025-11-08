@@ -1,4 +1,4 @@
-import prisma from "../config/config.db.js"
+import {prisma} from "../config/config.db.js"
 import User from "../types/user.types.js"
 
 export const getAllUsersFromDb = async (): Promise<User[]> => {

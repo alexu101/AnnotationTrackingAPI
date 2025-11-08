@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express"
 import { environment } from "../config/config.env.js";
 import ApiResponse from "../types/express.types.js";
 import { CustomError } from "../errors/CustomError.js";
+import logger from "../utils/logging.js";
+import { ErrorLog } from "../types/logging.types.js";
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
 
@@ -16,16 +18,20 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
     } else if (environment !== 'dev') {
         errorMessage = 'Internal server error'
     }
-    console.error(`Request ${req.method} ${req.path} failed with status code ${errorStatusCode} - ${errorType}: ${err.message}`)
+
+    const logMeta: ErrorLog = {
+        method: req.method,
+        path: req.path,
+        statusCode: errorStatusCode,
+        errorType,
+        stack: environment === 'dev' ? err.stack : undefined
+    }
+
+    logger.error(err.message, logMeta)
 
     const response: ApiResponse<any> = {
         success: false,
         message: errorMessage,
-    }
-
-    if (environment === 'dev'){
-        console.error(`Error stack: ${err.stack}`)
-        response.errorStack = err.stack || 'No error stack'
     }
 
     res.status(errorStatusCode).json(response)
