@@ -34,8 +34,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
         }
 
         const tokenPayload: TokenPayload = {
-            userId: newUser.id,
-            roleId: newUser.roleId
+            userId: newUser.id
         }
 
         const token = generateToken(tokenPayload)
@@ -72,8 +71,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         }
 
         const tokenPayload: TokenPayload = {
-            userId: user.id,
-            roleId: user.roleId
+            userId: user.id
         }
 
         const token = generateToken(tokenPayload)

@@ -1,5 +1,5 @@
 import { jwtExpires, jwtSecret } from "../config/config.env.js"
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import {TokenPayload} from '../types/auth.types.js'
 

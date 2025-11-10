@@ -1,9 +1,9 @@
-import User from "./user.types.js";
+import { Permission } from "./permission.types.js"
 
 export interface Role {
     id: string,
-    name: string
-    code: string,
+    name: string,
+    permissions: Permission[]
     createdAt: Date,
     updatedAt: Date
 }

@@ -7,5 +7,4 @@ export interface AuthInfo {
 
 export interface TokenPayload {
     userId: string
-    roleId: string
 }

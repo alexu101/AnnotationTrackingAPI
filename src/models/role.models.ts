@@ -5,6 +5,20 @@ export const getRoleByRoleNameFromDb = async (roleName: string): Promise<Role | 
     return await prisma.role.findUnique({
         where: {
             name: roleName
+        },
+        include: {
+            permissions: true
+        }
+    })
+}
+
+export const getRoleByIdFromDb = async (id: string): Promise<Role | null> => {
+    return await prisma.role.findUnique({
+        where: {
+            id
+        },
+        include: {
+            permissions: true
         }
     })
 }

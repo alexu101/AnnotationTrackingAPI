@@ -81,15 +81,18 @@ model WorkDay {
 }
 
 model Role {
-  id String @id @default(uuid())
+  id String @id @auto(uuid())
   users User[]
   name String @unique
-  code String @unique
-  // permissions Permission[]
+  permissions Permission[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// model Permission {
-
-// }
+model Permission {
+  id String @id @default(uuid())
+  value String @unique
+  roles Role[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
