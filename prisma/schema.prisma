@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model
 model User {
   id String @id @default(uuid())
   name String @unique
@@ -27,29 +26,37 @@ model User {
 
 model Project {
   id String @id @default(uuid())
+  name String
+  description String
+  priority String
+  state String
+  configurations Configuration[]
+  tasks Task[]
+  files File[]
   users User[] @relation("UserProjects")
-  // name String
-  // configuration configuration
-  // tasks Task[]
-  // files File[]
-  // state String
-  // description String
-  // priority String
-  // autoFileAssignation Boolean
-  // multipleFileAssignation Boolean
+  autoFileAssignation Boolean @default(false)
+  multipleFileAssignation Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// model File {
-//   id String @id @default(uuid())
-//   name String
-//   project @relation(fields: [projectId], references: [id])
-//   projectId String
-//   fileInfos FileInfo[]
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
+model Task {
+  id String @id @default(uuid())
+  project Project @relation(fields: [projectId], references: [id])
+  projectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model File {
+  id String @id @default(uuid())
+  name String
+  projects Project[]
+  projectId String
+  // fileInfos FileInfo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 // model FileInfos {
 //   id String @id @default(uuid())
@@ -64,13 +71,12 @@ model Project {
 //   updatedAt DateTime @updatedAt
 // }
 
-// model Configuration {
-//   id String @id @default(uuid())
-// }
-
-// model Task {
-//  id String @id @default(uuid())
-// }
+model Configuration {
+  id String @id @default(uuid())
+  projects Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model WorkDay {
   id String @id @default(uuid())
@@ -81,7 +87,7 @@ model WorkDay {
 }
 
 model Role {
-  id String @id @auto(uuid())
+  id String @id @default(uuid())
   users User[]
   name String @unique
   permissions Permission[]

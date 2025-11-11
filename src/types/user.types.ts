@@ -9,8 +9,8 @@ export default interface User {
     state: string
     norm: number
     level: string
-    projects: Project[]
-    workDays: WorkDay[]
+    projects?: Project[]
+    workDays?: WorkDay[]
     createdAt: Date
     updatedAt: Date
     password?: string
