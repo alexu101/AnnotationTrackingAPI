@@ -1,11 +1,10 @@
 import { Configuration } from "./configuration.type.js"
 import { Task } from "./task.types.js"
 import { File } from "./file.types.js"
-import User from "./user.types.js"
+import { User } from "./user.types.js"
 
-export default interface Project {
+export interface Project {
   id: string
-  name: string
   description: string
   priority: string
   state: string
@@ -17,4 +16,13 @@ export default interface Project {
   multipleFileAssignation: boolean
   createdAt: Date
   updatedAt: Date
+}
+
+export interface ProjectUpdatePayload {
+  name?: string
+  description?: string
+  priority?: string
+  state?: string
+  autoFileAssignation?: boolean
+  multipleFileAssignation?: boolean
 }

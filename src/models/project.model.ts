@@ -1,5 +1,8 @@
 import { prisma } from "../config/config.db.js";
-import Project from "../types/project.types.js";
+import { Prisma } from '@prisma/client'
+import {Project, ProjectUpdatePayload} from "../types/project.types.js";
+
+const projectWithRelations = Prisma.validator
 
 export const getProjectByIdFromDb = async (id: string): Promise<Project | null> => {
     return await prisma.project.findUnique({
@@ -9,7 +12,22 @@ export const getProjectByIdFromDb = async (id: string): Promise<Project | null> 
         include: {
             tasks: true,
             files: true,
-            configurations: true
+            configurations: true,
+            users: true
+        }
+    })
+}
+
+export const getProjectByNameFromDb = async (name: string): Promise<Project | null> => {
+    return await prisma.project.findUnique({
+        where: {
+            name
+        },
+        include: {
+            tasks: true,
+            files: true,
+            configurations: true,
+            users: true
         }
     })
 }
@@ -22,7 +40,8 @@ export const getAllProjectsFromDb = async (): Promise<Project[]> => {
         include: {
             tasks: true,
             files: true,
-            configurations: true
+            configurations: true,
+            users: true
         }
     })
 }
@@ -31,30 +50,30 @@ export const createProjectInDb = async (
     name: string,
     description: string,
     priority: string,
-    state: string
+    state: string,
+    autoFileAssignation?: boolean,
+    multipleFileAssignation?: boolean
 ): Promise<Project | null> => {
     return await prisma.project.create({
       data: {
         name,
         description,
         priority,
-        state
+        state,
+        autoFileAssignation: autoFileAssignation ?? false,
+        multipleFileAssignation: multipleFileAssignation ?? false
     },
     include: {
         tasks: true,
         files: true,
-        configurations: true
+        configurations: true,
+        users: true
     }})
 }
 
 export const updateProjectInDb = async (
     id: string,
-    updates: {
-        name: string
-        description: string,
-        priority: string,
-        state: string
-    }
+    updates: ProjectUpdatePayload
 ): Promise<Project | null> => {
     return await prisma.project.update({
         where: {

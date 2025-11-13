@@ -1,5 +1,6 @@
 import {Router} from 'express'
-import { createUserSchema, deleteUserSchema, getUserSchema, updateUserSchema, validate } from '../middlewares/schemaValidation.js'
+import { validate } from '../middlewares/schema-validation/validateSchema.js'
+import { getUserSchema, createUserSchema, updateUserSchema, deleteUserSchema } from '../middlewares/schema-validation/userValidation.js'
 import { createUser, getAllUsers, updateUser, getUserById } from '../controllers/user.controller.js'
 import { authorize } from '../middlewares/authMiddleware.js'
 import { rbac } from '../middlewares/rbac.js'

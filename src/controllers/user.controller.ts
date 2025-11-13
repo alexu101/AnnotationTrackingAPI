@@ -1,10 +1,11 @@
 import e, {NextFunction, Request, Response} from 'express'
 import bcrypt from 'bcrypt'
 import ApiResponse from '../types/express.types.js'
-import User from '../types/user.types.js'
+import {User, UserUpdatePayload} from '../types/user.types.js'
 import { createUserInDb, deleteUserFromDb, getAllUsersFromDb, getUserByEmailFromDb, getUserByIdFromDb, updateUserInDb } from '../models/user.model.js'
 import { getRoleByRoleNameFromDb } from '../models/role.models.js'
 import { NotFoundError } from '../errors/NotFoundError.js'
+import { ResourceConflictError } from '../errors/ResourceConflictError.js'
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,14 +28,8 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
         const {name, email, state, level, password, norm, role} = req.body
 
         const existingUser = await getUserByEmailFromDb(email)
-        if (existingUser){
-            const response: ApiResponse<any> = {
-                success: false,
-                message: `User with email ${email} already exists`
-            }
-            res.status(409).json(response)
-            return
-        }
+        if (existingUser)
+            throw new ResourceConflictError(`User with email ${email} already exists`)
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -65,26 +60,26 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = req.params.id as string
-            const updates = req.body
+        const updates = req.body as UserUpdatePayload
 
-            const existingUser = await getUserByIdFromDb(id)
+        const existingUser = await getUserByIdFromDb(id)
 
-            if (!existingUser){
-                throw new NotFoundError('User not found')
-            }
+        if (!existingUser){
+            throw new NotFoundError('User not found')
+        }
 
-            const updatedUser = await updateUserInDb(id, updates)
+        const updatedUser = await updateUserInDb(id, updates)
 
-            if(!updatedUser){
-                throw new Error('Internal Server error: User update failed')
-            }
+        if(!updatedUser){
+            throw new Error('Internal Server error: User update failed')
+        }
 
-            const response: ApiResponse<User> = {
-                success: true,
-                data: updatedUser,
-                message: 'User updated successfully'
-            }
-            res.status(200).json(response)
+        const response: ApiResponse<User> = {
+            success: true,
+            data: updatedUser,
+            message: 'User updated successfully'
+        }
+        res.status(200).json(response)
 
     } catch (err){
         next(err)
@@ -117,15 +112,20 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
     try{
         const id = req.params.id as string
 
-        const user = await deleteUserFromDb(id)
+        const user = await getUserByIdFromDb(id)
 
         if(!user){
             throw new NotFoundError('User not found')
         }
 
+        const deletedUser = await deleteUserFromDb(id)
+
+        if(!deletedUser)
+            throw new Error('Internal Server error: User deletion failed')
+
         const response: ApiResponse<User> = {
             success:true,
-            data: user,
+            data: deletedUser,
             message: "User deleted successfully"
         }
         res.status(200).json(response)

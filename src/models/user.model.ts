@@ -1,5 +1,5 @@
 import {prisma} from "../config/config.db.js"
-import User from "../types/user.types.js"
+import {User, UserUpdatePayload } from "../types/user.types.js"
 
 export const getAllUsersFromDb = async (): Promise<User[]> => {
     return await prisma.user.findMany({
@@ -77,13 +77,7 @@ export const createUserInDb = async (
 
 export const updateUserInDb = async (
     id: string,
-    updates: {
-        name: string,
-        roleId: string,
-        state: string,
-        level: string,
-        norm: number
-    }
+    updates: UserUpdatePayload
 ): Promise<User | null> => {
     return await prisma.user.update({
         where: {

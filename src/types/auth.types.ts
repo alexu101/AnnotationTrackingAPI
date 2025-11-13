@@ -1,4 +1,4 @@
-import User from "./user.types.js";
+import {User} from "./user.types.js";
 
 export interface AuthInfo {
     user: User
