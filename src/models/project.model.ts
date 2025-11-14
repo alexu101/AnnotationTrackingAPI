@@ -1,10 +1,7 @@
 import { prisma } from "../config/config.db.js";
-import { Prisma } from '@prisma/client'
-import {Project, ProjectUpdatePayload} from "../types/project.types.js";
+import {ProjectUpdatePayload, ProjectWithRelations} from "../types/project.types.js";
 
-const projectWithRelations = Prisma.validator
-
-export const getProjectByIdFromDb = async (id: string): Promise<Project | null> => {
+export const getProjectByIdFromDb = async (id: string): Promise<ProjectWithRelations | null> => {
     return await prisma.project.findUnique({
         where :{
             id
@@ -18,7 +15,7 @@ export const getProjectByIdFromDb = async (id: string): Promise<Project | null> 
     })
 }
 
-export const getProjectByNameFromDb = async (name: string): Promise<Project | null> => {
+export const getProjectByNameFromDb = async (name: string): Promise<ProjectWithRelations | null> => {
     return await prisma.project.findUnique({
         where: {
             name
@@ -32,7 +29,7 @@ export const getProjectByNameFromDb = async (name: string): Promise<Project | nu
     })
 }
 
-export const getAllProjectsFromDb = async (): Promise<Project[]> => {
+export const getAllProjectsFromDb = async (): Promise<ProjectWithRelations[]> => {
     return await prisma.project.findMany({
         orderBy:{
             createdAt: 'desc'
@@ -53,7 +50,7 @@ export const createProjectInDb = async (
     state: string,
     autoFileAssignation?: boolean,
     multipleFileAssignation?: boolean
-): Promise<Project | null> => {
+): Promise<ProjectWithRelations | null> => {
     return await prisma.project.create({
       data: {
         name,
@@ -74,7 +71,7 @@ export const createProjectInDb = async (
 export const updateProjectInDb = async (
     id: string,
     updates: ProjectUpdatePayload
-): Promise<Project | null> => {
+): Promise<ProjectWithRelations | null> => {
     return await prisma.project.update({
         where: {
             id
@@ -89,7 +86,7 @@ export const updateProjectInDb = async (
     })
 }
 
-export const deleteProjectFromDb = async (id: string): Promise<Project | null> => {
+export const deleteProjectFromDb = async (id: string): Promise<ProjectWithRelations | null> => {
     return await prisma.project.delete({
         where: {
             id

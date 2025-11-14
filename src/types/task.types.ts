@@ -1,21 +1,12 @@
-import {Project} from "./project.types.js"
-import {User} from "./user.types.js"
-import {File} from "./file.types.js"
+import { Prisma } from "../generated/prisma/client.js"
 
-export interface Task {
-    id: string,
-    priority: string,
-    state: string,
-    progress: number,
-    startDate: Date,
-    endDate: Date,
-    project: Project,
-    projectId: string,
-    users: User[],
-    files: File[],
-    createdAt: Date,
-    updatedAt: Date
-}
+export type TaskWithRelations = Prisma.TaskGetPayload<{
+    include: {
+        project: true,
+        users: true,
+        files: true
+  }
+}>
 
 export interface TaskCreationPayload {
     name: string,

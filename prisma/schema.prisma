@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -43,6 +43,7 @@ model Project {
 
 model Task {
   id String @id @default(uuid())
+  name String
   priority String
   state String
   progress Int @default(0)
