@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import { environment } from "../config/config.env.js";
 import ApiResponse from "../types/express.types.js";
 import { CustomError } from "../errors/CustomError.js";
-import logger from "../utils/logging.js";
+import logger from "../utils/utils.logging.js";
 import { ErrorLog } from "../types/logging.types.js";
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {

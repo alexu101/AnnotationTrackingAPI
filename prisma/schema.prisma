@@ -21,6 +21,7 @@ model User {
   projects Project[] @relation("UserProjects")
   workDays WorkDay[]
   tasks Task[]
+  fileInfos FileInfo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -53,6 +54,7 @@ model Task {
   projectId String
   users User[]
   files File[]
+  fileInfos FileInfo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -61,9 +63,24 @@ model File {
   id String @id @default(uuid())
   name String
   projects Project[]
-  projectId String
-  // fileInfos FileInfo[]
+  fileInfos FileInfo[]
   tasks Task[]
+  s3Location String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model FileInfo {
+  id String @id @default(uuid())
+  activityType String
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  task Task @relation(fields: [taskId], references: [id])
+  taskId String
+  file File @relation(fields: [fileId], references: [id])
+  fileId String
+  annotationData Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
