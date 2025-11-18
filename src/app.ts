@@ -8,6 +8,7 @@ import logger from './utils/utils.logging.js'
 import { connectToDB } from './config/config.db.js'
 import projectRouter from './routes/project.routes.js'
 import { taskRouter } from './routes/task.routes.js'
+import { fileRouter } from './routes/file.routes.js'
 
 const app: Express = express()
 
@@ -16,6 +17,7 @@ app.use('/api/users', userRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/projects', projectRouter)
 app.use('/api/tasks',taskRouter)
+app.use('/api/files', fileRouter)
 
 app.use(errorHandler)
 
