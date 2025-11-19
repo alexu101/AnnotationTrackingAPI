@@ -8,30 +8,28 @@ import { getRoleByRoleNameFromDb } from "../models/role.models.js"
 import { ResourceConflictError } from "../errors/ResourceConflictError.js"
 import { NotFoundError } from "../errors/NotFoundError.js"
 import { BadRequestError } from "../errors/BadRequestError.js"
+import { UserCreationPayload } from "../types/user.types.js"
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {name, email, password, role, state, level, norm} = req.body
+        const payload = req.body as UserCreationPayload
 
-        const existingUser = await getUserByEmailFromDb(email)
+        const existingUser = await getUserByEmailFromDb(payload.email)
 
-        if(existingUser){
-            throw new ResourceConflictError(`User with email ${email} already exists`)
-        }
+        if(existingUser)
+            throw new ResourceConflictError(`User with email ${payload.email} already exists`)
 
-        const userRole = await getRoleByRoleNameFromDb(role)
+        const userRole = await getRoleByRoleNameFromDb(payload.role)
 
-        if(!userRole){
+        if(!userRole)
             throw new NotFoundError('Invalid role')
-        }
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const hashedPassword = await bcrypt.hash(payload.password, 10)
 
-        const newUser = await createUserInDb(name, email, state, level, norm, hashedPassword, userRole.id)
+        const newUser = await createUserInDb(payload.name, payload.email, payload.state, payload.level, payload.norm, hashedPassword, userRole.id)
 
-        if(!newUser) {
+        if(!newUser)
             throw new Error('Internal server error: User creation failed')
-        }
 
         const tokenPayload: TokenPayload = {
             userId: newUser.id

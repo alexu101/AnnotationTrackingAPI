@@ -9,6 +9,15 @@ export type ProjectWithRelations = Prisma.ProjectGetPayload<{
   }
 }>
 
+export interface ProjectCreationPayload {
+  name: string,
+  description: string,
+  priority: string,
+  state: string,
+  autoFileAssignation?: boolean,
+  multipleFileAssignation?: boolean
+}
+
 export interface ProjectUpdatePayload {
   name?: string
   description?: string

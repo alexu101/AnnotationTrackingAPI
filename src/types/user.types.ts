@@ -1,19 +1,23 @@
-import Project from "./project.types.js"
-import WorkDay from "./workday.project.js"
+import { Prisma } from "../generated/prisma/client.js"
 
-export interface User {
-    id: string
-    name: string
-    email: string
-    roleId: string
-    state: string
-    norm: number
-    level: string
-    projects?: Project[]
-    workDays?: WorkDay[]
-    createdAt: Date
-    updatedAt: Date
-    password?: string
+export type UserWithRelations = Prisma.UserGetPayload<{
+    include: {
+        workDays: true,
+        projects: true
+    },
+    omit: {
+        password: true
+    }
+}>
+
+export interface UserCreationPayload {
+    name: string,
+    email: string,
+    password: string,
+    state: string,
+    norm: number,
+    level: string,
+    role: string
 }
 
 export interface UserUpdatePayload {

@@ -1,14 +1,16 @@
 import { prisma } from "../config/config.db.js"
 import {TaskUpdatePayload, TaskCreationPayload, TaskWithRelations } from "../types/task.types.js"
 
+const taskRelations = {
+    users: true,
+    files: true,
+    project: true,
+}
+
 export const createTaskInDb = async (taskCreationPayload: TaskCreationPayload): Promise<TaskWithRelations | null> => {
     return await prisma.task.create({
         data: taskCreationPayload,
-        include: {
-            users: true,
-            files: true,
-            project: true,
-        }
+        include: taskRelations
     })
 }
 
@@ -17,11 +19,7 @@ export const getTaskByIdFromDb = async (id: string): Promise<TaskWithRelations |
         where: {
             id
         },
-        include: {
-            users: true,
-            files: true,
-            project: true
-        }
+        include: taskRelations
     })
 }
 
@@ -30,11 +28,7 @@ export const getAllTasksFromDb = async (): Promise<TaskWithRelations[]> => {
         orderBy: {
             createdAt: 'desc'
         },
-        include: {
-            users: true,
-            files: true,
-            project: true
-        }
+        include: taskRelations
     })
 }
 
@@ -44,11 +38,7 @@ export const updateTaskInDb = async (id: string, updates: TaskUpdatePayload): Pr
             id
         },
         data: updates,
-        include: {
-            users: true,
-            project: true,
-            files: true
-        }
+        include: taskRelations
     })
 }
 
@@ -57,10 +47,6 @@ export const deleteTaskFromDb = async (id: string): Promise<TaskWithRelations | 
         where: {
             id
         },
-        include: {
-            project: true,
-            files: true,
-            users: true
-        }
+        include: taskRelations
     })
 }

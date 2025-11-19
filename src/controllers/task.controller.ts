@@ -126,7 +126,7 @@ export const deleteTask = async (req: Request, res: Response, next: NextFunction
             message: "Task deleted successfully"
         }
 
-        res.status(200).json(200)
+        res.status(200).json(response)
     } catch (err) {
         next(err)
     }

@@ -1,17 +1,16 @@
 import { Response, Request, NextFunction } from "express"
 import { createProjectInDb, deleteProjectFromDb, getAllProjectsFromDb, getProjectByIdFromDb, getProjectByNameFromDb, updateProjectInDb } from "../models/project.model.js"
 import ApiResponse from "../types/express.types.js"
-import Project from "../types/project.types.js"
+import { ProjectUpdatePayload, ProjectCreationPayload, ProjectWithRelations } from "../types/project.types.js"
 import { NotFoundError } from "../errors/NotFoundError.js"
 import { ResourceConflictError } from "../errors/ResourceConflictError.js"
 import { BadRequestError } from "../errors/BadRequestError.js"
-import ProjectUpdatePayload from "../types/project.types.js"
 
 export const getAllProjects = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const projects = await getAllProjectsFromDb()
 
-        const response: ApiResponse<Project[]> = {
+        const response: ApiResponse<ProjectWithRelations[]> = {
             success: true,
             data: projects,
             message: 'Projects retrieved successfully'
@@ -31,7 +30,7 @@ export const getProjectById = async (req: Request, res: Response, next: NextFunc
         if(!project)
             return new NotFoundError("Project not found")
 
-        const response: ApiResponse<Project> = {
+        const response: ApiResponse<ProjectWithRelations> = {
             success: true,
             data: project,
             message: 'Project retrieved successfully'
@@ -45,26 +44,19 @@ export const getProjectById = async (req: Request, res: Response, next: NextFunc
 
 export const createProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {
-            name,
-            description,
-            priority,
-            state,
-            autoFileAssignation,
-            multipleFileAssignation
-        } = req.body
+        const payload = req.body as ProjectCreationPayload
 
-        const existingProject = await getProjectByNameFromDb(name)
+        const existingProject = await getProjectByNameFromDb(payload.name)
 
         if(!existingProject)
             throw new ResourceConflictError("Project with specified name already exists")
 
-        const newProject = await createProjectInDb(name, description, priority, state, autoFileAssignation, multipleFileAssignation)
+        const newProject = await createProjectInDb(payload)
 
         if(!newProject)
             throw new BadRequestError("Project could not be created")
 
-        const response: ApiResponse<Project> = {
+        const response: ApiResponse<ProjectWithRelations> = {
             success: true,
             data: newProject,
             message: 'Project created successfully'
@@ -91,7 +83,7 @@ export const updateProject = async (req: Request, res: Response, next: NextFunct
         if(!updatedProject)
             throw new Error("Internal server error: Project update failed")
 
-        const response: ApiResponse<Project> = {
+        const response: ApiResponse<ProjectWithRelations> = {
             success: true,
             data: updatedProject,
             message: 'Project updated successfully'
@@ -117,7 +109,7 @@ export const deleteProject = async (req: Request, res: Response, next: NextFunct
         if(!deletedProject)
             throw new Error("Internal server error: Project deletion failed")
 
-        const response: ApiResponse<Project> = {
+        const response: ApiResponse<ProjectWithRelations> = {
             success: false,
             data: deletedProject,
             message: "User deleted successfully"

@@ -1,9 +1,7 @@
-import { Permission } from "./permission.types.js"
+import { Prisma } from "../generated/prisma/client.js"
 
-export interface Role {
-    id: string,
-    name: string,
-    permissions: Permission[]
-    createdAt: Date,
-    updatedAt: Date
-}
+export type RoleWithRelations = Prisma.RoleGetPayload<{
+    include: {
+        permissions: true
+    }
+}>

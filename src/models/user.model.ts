@@ -1,7 +1,12 @@
 import {prisma} from "../config/config.db.js"
-import {User, UserUpdatePayload } from "../types/user.types.js"
+import {UserWithRelations, UserUpdatePayload } from "../types/user.types.js"
 
-export const getAllUsersFromDb = async (): Promise<User[]> => {
+const userRelations = {
+    workDays: true,
+    projects: true
+}
+
+export const getAllUsersFromDb = async (): Promise<UserWithRelations[]> => {
     return await prisma.user.findMany({
         orderBy:{
             createdAt: 'desc'
@@ -9,14 +14,11 @@ export const getAllUsersFromDb = async (): Promise<User[]> => {
         omit:{
             password: true
         },
-        include:{
-            workDays: true,
-            projects: true
-        }
+        include: userRelations
     })
 }
 
-export const getUserByIdFromDb = async (id: string): Promise<User | null> => {
+export const getUserByIdFromDb = async (id: string): Promise<UserWithRelations | null> => {
     return await prisma.user.findUnique({
         where: {
             id
@@ -24,14 +26,11 @@ export const getUserByIdFromDb = async (id: string): Promise<User | null> => {
         omit:{
             password: true
         },
-        include:{
-            workDays: true,
-            projects: true
-        }
+        include: userRelations
     })
 }
 
-export const getUserByEmailFromDb = async (email: string, omitPassword: boolean = true): Promise<User | null> => {
+export const getUserByEmailFromDb = async (email: string, omitPassword: boolean = true): Promise<UserWithRelations | null> => {
     return await prisma.user.findUnique({
         where: {
             email
@@ -39,10 +38,7 @@ export const getUserByEmailFromDb = async (email: string, omitPassword: boolean 
         omit:{
             password: omitPassword
         },
-        include:{
-            workDays: true,
-            projects: true,
-        }
+        include: userRelations
     })
 }
 
@@ -54,7 +50,7 @@ export const createUserInDb = async (
     norm: number,
     password: string,
     roleId: string
-): Promise<User | null> => {
+): Promise<UserWithRelations | null> => {
     return await prisma.user.create({
         data: {
             name,
@@ -68,17 +64,14 @@ export const createUserInDb = async (
         omit: {
             password: true
         },
-        include: {
-            projects: true,
-            workDays: true
-        }
+        include: userRelations
     })
 }
 
 export const updateUserInDb = async (
     id: string,
     updates: UserUpdatePayload
-): Promise<User | null> => {
+): Promise<UserWithRelations | null> => {
     return await prisma.user.update({
         where: {
             id
@@ -87,14 +80,11 @@ export const updateUserInDb = async (
         omit: {
             password: true
         },
-        include: {
-            workDays: true,
-            projects: true
-        }
+        include: userRelations
     })
 }
 
-export const deleteUserFromDb = async (id: string):  Promise<User | null> => {
+export const deleteUserFromDb = async (id: string):  Promise<UserWithRelations | null> => {
     return await prisma.user.delete({
         where: {
             id
@@ -102,9 +92,6 @@ export const deleteUserFromDb = async (id: string):  Promise<User | null> => {
         omit: {
             password: true
         },
-        include: {
-            workDays: true,
-            projects: true
-        }
+        include: userRelations
     })
 }
