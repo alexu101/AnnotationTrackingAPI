@@ -100,7 +100,22 @@ model FileInfo {
 
 model Configuration {
   id String @id @default(uuid())
+  name String @unique
+  role Role @relation(fields: [roleId], references: [id])
+  thresholds Threshold[]
+  roleId String
   projects Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Threshold {
+  id String @id @default(uuid())
+  complexity String
+  amount Int
+  hours Int
+  configurations Configuration @relation(fields: [configurationId], references: [id])
+  configurationId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -117,6 +132,7 @@ model Role {
   id String @id @default(uuid())
   users User[]
   name String @unique
+  configurations Configuration[]
   permissions Permission[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
