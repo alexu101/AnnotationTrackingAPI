@@ -9,13 +9,13 @@ export type ConfigurationWithRelations = Prisma.ConfigurationGetPayload<{
 }>
 
 export interface ConfigurationCreationPayload {
-    name: String,
-    roleId: String,
-    measurementUnit: String
+    name: string,
+    roleId: string,
+    measurementUnit: string
 }
 
 export interface ConfigurationUpdatePayload {
-    name: String,
-    roleId: String,
-    measurementUnit: String
+    name: string,
+    roleId: string,
+    measurementUnit: string
 }

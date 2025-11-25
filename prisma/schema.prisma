@@ -104,6 +104,7 @@ model Configuration {
   role Role @relation(fields: [roleId], references: [id])
   thresholds Threshold[]
   roleId String
+  measurementUnit String
   projects Project[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
