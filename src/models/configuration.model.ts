@@ -23,6 +23,15 @@ export const getConfigurationByIdFromDb = async (id: string): Promise<Configurat
     })
 }
 
+export const getConfigurationByNameFromDb = async (name: string): Promise<ConfigurationWithRelations | null> => {
+    return await prisma.configuration.findUnique({
+        where: {
+            name
+        },
+        include: configurationRelations
+    })
+}
+
 export const getConfigurationsByProjectFromDb = async (projectId: string): Promise<ConfigurationWithRelations[]> => {
     return await prisma.configuration.findMany({
         where: {
@@ -55,7 +64,7 @@ export const updateConfigurationInDb = async (id: string, data: ConfigurationUpd
     })
 }
 
-export const deleteConfigurationInDb = async (id: string) => {
+export const deleteConfigurationFromDb = async (id: string) => {
     return await prisma.configuration.delete({
         where: {
             id

@@ -5,6 +5,8 @@ import { ProjectUpdatePayload, ProjectCreationPayload, ProjectWithRelations } fr
 import { NotFoundError } from "../errors/NotFoundError.js"
 import { ResourceConflictError } from "../errors/ResourceConflictError.js"
 import { BadRequestError } from "../errors/BadRequestError.js"
+import { getConfigurationsByProjectFromDb } from "../models/configuration.model.js"
+import { ConfigurationWithRelations } from "../types/configuration.types.js"
 
 export const getAllProjects = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,6 +40,29 @@ export const getProjectById = async (req: Request, res: Response, next: NextFunc
 
         res.status(200).json(response)
     } catch (err) {
+        next(err)
+    }
+}
+
+export const getProjectConfigurations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const id = req.params.id as string
+
+        const project = await getProjectByIdFromDb(id)
+
+        if(!project)
+            throw new NotFoundError("Project not found")
+
+        const configurations = await getConfigurationsByProjectFromDb(id)
+
+        const response: ApiResponse<ConfigurationWithRelations[]> = {
+            success: true,
+            data: configurations,
+            message: "Configurations retrieved successfully"
+        }
+
+        res.status(200).json(response)
+    } catch(err) {
         next(err)
     }
 }
